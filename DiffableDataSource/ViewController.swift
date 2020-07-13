@@ -28,6 +28,12 @@ class ViewController: UIViewController {
         super.viewDidAppear(animated)
         configureTableView()
         configureDataSource()
+        configureNavBar()
+    }
+    
+    private func configureNavBar() {
+        navigationItem.title = "Countdown with diffable data source"
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(startCountdown))
     }
     
     private func configureTableView() {
@@ -44,17 +50,60 @@ class ViewController: UIViewController {
         dataSource = UITableViewDiffableDataSource<Section,Int>(tableView: tableView, cellProvider: { (tableView, indexPath, value) -> UITableViewCell? in
             
             let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-            cell.textLabel?.text = "\(value)"
+            
+            if value == -1 {
+                cell.textLabel?.text = "App launched 🚀"
+            } else {
+                cell.textLabel?.text = "\(value)"
+            }
             return cell
         })
         //set type of animation
         dataSource.defaultRowAnimation = .fade
-        //Setup snapshot
+        startCountdown()
+    }
+    
+    @objc private func startCountdown() {
+        if timer != nil {
+            timer.invalidate()
+        }
+        //configure timer
+        //set interval for countdown
+        //assign method that is called every second
+        timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(decrementCounter), userInfo: nil, repeats: true)
+        
+        //reset starting interval
+        startInterval = 10
+        
+        //setup snapshot
         var snapshot = NSDiffableDataSourceSnapshot<Section, Int>()
         snapshot.appendSections([.main])
-        snapshot.appendItems([1,2,3,4,5,6,7,8,9,10])
+        snapshot.appendItems([startInterval])
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+    
+    @objc private func decrementCounter() {
+        //access snapshot to manipulate data
+        //snapshot is the source of tableview data
+        var snapshot = dataSource.snapshot()
+        
+        guard startInterval > 0 else {
+            //when value hits 0, we stop the count
+            timer.invalidate()
+            ship()
+            return
+        }
+        startInterval -= 1
+        
+        snapshot.appendItems([startInterval])
         dataSource.apply(snapshot, animatingDifferences: true)
     }
     
+    private func ship() {
+        //add an extra row when timer is invalid
+        var snapshot = dataSource.snapshot()
+        snapshot.appendItems([-1])
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
 }
 
