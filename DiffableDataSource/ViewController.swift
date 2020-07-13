@@ -26,9 +26,9 @@ class ViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        configureNavBar()
         configureTableView()
         configureDataSource()
-        configureNavBar()
     }
     
     private func configureNavBar() {
@@ -51,7 +51,7 @@ class ViewController: UIViewController {
             
             let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
             
-            if value == -1 {
+            if value == 0 {
                 cell.textLabel?.text = "App launched 🚀"
             } else {
                 cell.textLabel?.text = "\(value)"
@@ -87,7 +87,7 @@ class ViewController: UIViewController {
         //snapshot is the source of tableview data
         var snapshot = dataSource.snapshot()
         
-        guard startInterval > 0 else {
+        guard startInterval > 1 else {
             //when value hits 0, we stop the count
             timer.invalidate()
             ship()
@@ -102,7 +102,7 @@ class ViewController: UIViewController {
     private func ship() {
         //add an extra row when timer is invalid
         var snapshot = dataSource.snapshot()
-        snapshot.appendItems([-1])
+        snapshot.appendItems([0])
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }
